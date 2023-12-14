@@ -1,0 +1,4 @@
+[[bin]]
+name = "day-1"
+path = "src/day-01/main.rs"
+

@@ -6,42 +6,86 @@ use nom::sequence::tuple;
 use nom::{bytes::complete::tag, Finish, IResult};
 
 fn main() {
-  let games = all_consuming(parse_all_games)(include_str!("input.txt"))
+  let games_1 = all_consuming(parse_all_games)(include_str!("input.txt"))
     .finish()
     .unwrap()
     .1;
 
-  println!("Games: {:?}", games);
+  let games_2 = all_consuming(parse_all_games)(include_str!("input.txt"))
+    .finish()
+    .unwrap()
+    .1;
+
+  println!("Total: {:?}", solution_1(games_1));
+  println!("Total: {:?}", solution_2(games_2));
+}
+
+fn solution_1(games: Vec<Game>) -> i32 {
+  let max_red_value = 12;
+  let max_green_value = 13;
+  let max_blue_value = 14;
+  let mut total = 0;
+
+  games.iter().for_each(|game| {
+    let mut all_sets_valid = true;
+    game.sets.iter().for_each(|set| {
+      let invalid_sets = set
+        .dices
+        .iter()
+        .filter(|dice| match dice.color {
+          Color::Red => dice.value > max_red_value,
+          Color::Green => dice.value > max_green_value,
+          Color::Blue => dice.value > max_blue_value,
+        })
+        .count();
+      if invalid_sets > 0 {
+        all_sets_valid = false;
+      }
+    });
+    if all_sets_valid {
+      total += game.game_id;
+    }
+  });
+  return total;
+}
+
+fn solution_2(games: Vec<Game>) -> i32 {
+  let mut total = 0;
+  games.iter().for_each(|game| {
+    let max_red_value = game
+      .sets
+      .iter()
+      .flat_map(|set| set.dices.iter())
+      .filter(|dice| dice.color == Color::Red)
+      .max()
+      .unwrap()
+      .value;
+
+    let max_blue_value = game
+      .sets
+      .iter()
+      .flat_map(|set| set.dices.iter())
+      .filter(|dice| dice.color == Color::Blue)
+      .max()
+      .unwrap()
+      .value;
+
+    let max_green_value = game
+      .sets
+      .iter()
+      .flat_map(|set| set.dices.iter())
+      .filter(|dice| dice.color == Color::Green)
+      .max()
+      .unwrap()
+      .value;
+    total += max_red_value * max_blue_value * max_green_value;
+  });
+  return total;
 }
 
 pub fn parse_all_games(i: &str) -> IResult<&str, Vec<Game>> {
   let game_list = separated_list1(cc::newline, parse_game)(i);
   return game_list;
-}
-
-#[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
-pub struct Game {
-  pub game_id: i32,
-  pub sets: Vec<GameSet>,
-}
-
-#[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
-pub struct GameSet {
-  pub dices: Vec<Dice>,
-  pub set_number: i32,
-}
-
-#[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
-pub struct Dice {
-  pub color: Color,
-  pub value: i32,
-}
-
-#[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
-pub enum Color {
-  Red,
-  Green,
-  Blue,
 }
 
 fn parse_game(i: &str) -> IResult<&str, Game> {
@@ -96,4 +140,29 @@ fn color_from_string(color: &str) -> Color {
     "blue" => Color::Blue,
     _ => panic!("Unknown color: {}", color),
   }
+}
+
+#[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
+pub struct Game {
+  pub game_id: i32,
+  pub sets: Vec<GameSet>,
+}
+
+#[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
+pub struct GameSet {
+  pub dices: Vec<Dice>,
+  pub set_number: i32,
+}
+
+#[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
+pub struct Dice {
+  pub color: Color,
+  pub value: i32,
+}
+
+#[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
+pub enum Color {
+  Red,
+  Green,
+  Blue,
 }

@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use nom::bytes::complete::{take_until, take_while};
 use nom::character::complete as cc;
 use nom::combinator::{all_consuming, map_res};
@@ -115,20 +116,20 @@ fn parse_game(i: &str) -> IResult<&str, Game> {
           let dices = game
             .1
             .split(", ")
-            .collect::<Vec<&str>>()
+            .collect_vec()
             .iter()
             .map(|pair| {
               let color = color_from_string(pair.split(" ").collect::<Vec<&str>>()[1]);
               let value = pair.split(" ").collect::<Vec<&str>>()[0].parse().unwrap();
               Dice { color, value }
             })
-            .collect::<Vec<Dice>>();
+            .collect_vec();
           GameSet {
             dices,
             set_number: idx as i32,
           }
         })
-        .collect::<Vec<GameSet>>(),
+        .collect_vec(),
     },
   ))
 }

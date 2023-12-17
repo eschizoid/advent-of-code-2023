@@ -1,4 +1,5 @@
 use indexmap::indexmap;
+use itertools::Itertools;
 
 fn main() {
   let input_1 = include_str!("input.txt").split("\n").collect::<Vec<&str>>();
@@ -69,6 +70,6 @@ fn solution_2(mut input: Vec<&str>) {
       .clone()
       .iter()
       .map(|x| x.as_str())
-      .collect::<Vec<&str>>(),
+      .collect_vec(),
   );
 }

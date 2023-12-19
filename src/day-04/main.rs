@@ -1,3 +1,4 @@
+use array_tool::vec::Intersect;
 use itertools::Itertools;
 use nom::bytes::complete::{take_until, take_while};
 use nom::character::complete as cc;
@@ -11,13 +12,28 @@ fn main() {
     .finish()
     .unwrap()
     .1;
-
-  println!("Total: {:?}", games_1);
+  println!("Total: {:?}", solution_1(games_1));
 }
 
 pub fn parse_all_cards(i: &str) -> IResult<&str, Vec<Card>> {
   let game_list = separated_list1(cc::newline, parse_game)(i);
   return game_list;
+}
+
+fn solution_1(cards: Vec<Card>) -> i32 {
+  let base: i32 = 2;
+  return cards
+    .iter()
+    .map(|card| {
+      let count = card
+        .winning_numbers
+        .intersect(card.numbers_you_have.clone())
+        .iter()
+        .count()
+        - 1;
+      return base.pow(count as u32);
+    })
+    .sum();
 }
 
 fn parse_game(i: &str) -> IResult<&str, Card> {
